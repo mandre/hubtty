@@ -769,8 +769,8 @@ class SyncChangeTask(Task):
                 if remote_commit.get('_hubtty_remote_checks_data'):
                     self._updateChecks(session, commit, remote_commit['_hubtty_remote_checks_data'])
 
-            # remote_hashtags = remote_change.get('hashtags', [])
-            # change.setHashtags(remote_hashtags)
+            remote_hashtags = remote_change.get('labels', [])
+            change.setHashtags(remote_hashtags)
 
             # Commit reviews
             new_message = False
@@ -999,8 +999,8 @@ class SetHashtagsTask(Task):
             change = session.getChange(self.change_key)
             local_hashtags = [h.name for h in change.hashtags]
 
-        remote_change = sync.get('changes/%s' % change.id)
-        remote_hashtags = remote_change.get('hashtags', [])
+        remote_change = sync.get('repos/%s' % self.change_id)
+        remote_hashtags = remote_change.get('labels', [])
 
         with app.db.getSession() as session:
             change = session.getChange(self.change_key)
@@ -1015,7 +1015,7 @@ class SetHashtagsTask(Task):
             data = dict(add=add, remove=remove)
             change.pending_hashtags = False
             # Inside db session for rollback
-            sync.post('changes/%s/hashtags' % (change.id,),
+            sync.post('repos/%s/labels' % (change.id,),
                      data)
             sync.submitTask(SyncChangeTask(change.id, priority=self.priority))
 
